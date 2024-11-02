@@ -416,4 +416,38 @@ Note that this example contains french terms
   - ContinuedSectionSubsection for extended content
   - Lawlabel elements for list markers
 
+## 3. Metadata
+- The Criminal Code HTML contains important metadata both at the document level and within specific sections.
 
+### 3.1 Document Metadata
+Key metadata elements that should be present and validated:
+
+#### Required Meta Tags
+<meta name="dcterms.title" content="Consolidated federal laws of Canada, Criminal Code" />
+<meta name="dcterms.creator" title="Department of Justice" content="Legislative Services Branch" />
+<meta name="dcterms.issued" title="W3CDTF" content="2024-01-14" />
+<meta name="dcterms.modified" title="W3CDTF" content="2024-01-14" />
+<meta name="dcterms.language" title="ISO639-2" content="eng" />
+
+### 3.2 Section Cross-References
+
+Section labels are clickable links that allow navigation between related sections. They follow a consistent pattern:
+
+#### Example:
+<strong><a class="sectionLabel" id="s-23.1"><span class="sectionLabel">23.1</span></a></strong>
+
+##### Components:
+- Link Element:
+  - Class: "sectionLabel"
+  - ID Format: "s-{section_number}" (e.g., "s-23.1")
+  - Contains: span element with section number text
+- HTML Structure:
+  - Wrapped in <strong> tags
+  - Uses non-breaking space (&nbsp;) after the link
+- Special Features:
+  - Consistent across all section types (base, lists, definitions, subsections)
+  - Always precedes the main section content
+  - Can be referenced in other sections' content via same ID format
+
+
+  
