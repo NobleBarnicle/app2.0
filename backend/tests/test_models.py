@@ -71,10 +71,10 @@ def test_criminal_code_structure():
             print(f"    Cross Reference: {section.cross_references[0].text}")
 
 def test_get_section_by_number():
-    # Create a test structure
+    # Create a test structure with section 35
     section = Section(
-        id="test-1",
-        number="1",
+        id="test-35",
+        number="35",
         marginal_note=None,
         text="Test section",
         subsections=[],

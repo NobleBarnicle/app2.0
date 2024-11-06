@@ -78,16 +78,18 @@ class CriminalCodeParser:
         section_id = section_element.get('id', '')
         section_number = self._extract_section_number(section_element)
         marginal_note = self._parse_marginal_note(section_element)
+        historical_notes = self._parse_historical_notes(section_element)
         
         return Section(
             id=section_id,
             number=section_number,
-            marginal_note=marginal_note,
             text=self._extract_section_text(section_element),
+            marginal_note=marginal_note,
             subsections=[],
             definitions=[],
-            historical_notes=[],
-            cross_references=[]
+            historical_notes=historical_notes,
+            cross_references=[],
+            list_items=[]
         )
     
     def _parse_marginal_note(self, element: Tag) -> Optional[MarginalNote]:
@@ -242,25 +244,16 @@ class CriminalCodeParser:
             if cross_ref:
                 section.cross_references.append(cross_ref)
     
-    def _parse_historical_notes(self, element: Tag) -> List[HistoricalNote]:
-        """Parse historical notes from an element"""
+    def _parse_historical_notes(self, section_element: Tag) -> List[HistoricalNote]:
+        """Parse historical notes that follow a section"""
         notes = []
-        for note_item in element.find_all('li', class_='HistoricalNoteSubItem'):
-            # Extract citation and try to parse date if available
-            citation = note_item.get_text(strip=True)
-            date_match = re.search(r'\b\d{4}\b', citation)
-            date = None
-            if date_match:
-                try:
-                    date = datetime(int(date_match.group()), 1, 1)
-                except ValueError:
-                    pass
-                    
-            notes.append(HistoricalNote(
-                text=citation,
-                date=date,
-                citation=citation
-            ))
+        # Find the next historical note div after this section
+        historical_div = section_element.find_next_sibling('div', class_='HistoricalNote')
+        if historical_div:
+            for note_item in historical_div.find_all('li', class_='HistoricalNoteSubItem'):
+                notes.append(HistoricalNote(
+                    text=note_item.get_text(strip=True)
+                ))
         return notes
     
     def _parse_cross_reference(self, element: Tag) -> Optional[CrossReference]:
@@ -317,8 +310,14 @@ class CriminalCodeParser:
             if item['subitems']:
                 text.append(self._format_nested_items(item['subitems'], indent + 1))
         return '\n'.join(text)
+    
+    def _parse_parts(self, soup: BeautifulSoup) -> List[Part]:
+        """Parse all parts from the document"""
+        parts = []
+        for part_elem in soup.find_all('div', class_='part'):
+            part = self.parse_part(part_elem)
+            if part:
+                parts.append(part)
+        return parts
 
-def parse_section(html):
-    """Parse a section of the Criminal Code HTML"""
-    # Placeholder for now - will implement actual parsing later
-    pass
+

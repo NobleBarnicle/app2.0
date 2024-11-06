@@ -6,16 +6,8 @@ The Criminal Code is hierarchically structured, with Parts as top-level containe
 ## 1. Parts
 - Parts are the highest-level divisions of the Criminal Code.
 - Parts may contain subheadings. 
-### Example 1: Basic Part
-<h2 class="Part" id="h-115006"><span class="HTitleText1">Short Title</span></h2>
 
-#### Components:
-- Title: "Short Title" (exact text from HTitleText1)
-- ID: "h-115006" (unique identifier)
-- HTML Classes: ["Part"] (for element selection)
-- Element Type: h2
-
-### Example 2: Numbered Part w/ subheadings
+### Example: Numbered Part w/ optional subheadings
 <h2 class="Part" id="h-115244"><span class="HTitleText1">Part I</span></h2>
 <h3 class="Subheading" id="h-115245"><span class="HTitleText2">General</span></h3>
 

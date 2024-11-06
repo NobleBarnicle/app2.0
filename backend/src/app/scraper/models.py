@@ -76,16 +76,19 @@ class Section:
     """Represents a section of the Criminal Code"""
     id: str
     number: str  # e.g. "2", "2.1", etc.
-    marginal_note: Optional[MarginalNote]
     text: str
-    subsections: List[Subsection]
-    definitions: List[Definition]
-    historical_notes: List[HistoricalNote]
-    cross_references: List[CrossReference]
-    list_items: List[ListItem]  # For nested lists directly under section
+    marginal_note: Optional[MarginalNote] = None
+    subsections: List[Subsection] = None
+    definitions: List[Definition] = None
+    historical_notes: List[HistoricalNote] = None
+    cross_references: List[CrossReference] = None
+    list_items: List[ListItem] = None  # For nested lists directly under section
     parent_part: Optional[str] = None
     
     def __post_init__(self):
+        # Initialize empty lists for any None values
+        if self.list_items is None:
+            self.list_items = []
         if self.subsections is None:
             self.subsections = []
         if self.definitions is None:
@@ -94,8 +97,6 @@ class Section:
             self.historical_notes = []
         if self.cross_references is None:
             self.cross_references = []
-        if self.list_items is None:
-            self.list_items = []
 
 @dataclass
 class Part:
