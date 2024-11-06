@@ -1,24 +1,25 @@
 import pytest
 from app import create_app
-from config import Config
 import re
-
-class TestConfig(Config):
-    TESTING = True
-    POSTGRES_URI = 'postgresql://localhost/criminalcode_test'
+from pathlib import Path
 
 @pytest.fixture
 def app():
-    app = create_app(TestConfig)
+    """Create and configure a test Flask app"""
+    app = create_app(testing=True)
     return app
 
 @pytest.fixture
 def client(app):
+    """Create a test client"""
     return app.test_client()
 
 def load_examples_from_md():
     """Load and parse examples from parsing_examples.md"""
-    with open('backend/app/scraper/parsing_examples.md', 'r') as f:
+    project_root = Path(__file__).parent.parent
+    file_path = project_root / "src" / "app" / "scraper" / "parsing_examples.md"
+    
+    with open(file_path, 'r') as f:
         content = f.read()
     
     # Dictionary to store examples by their type/name
@@ -80,4 +81,4 @@ def get_example():
         if not example_name:
             raise ValueError(f"No example mapping found for test {test_name}")
         return examples[example_name]
-    return _get_example 
+    return _get_example

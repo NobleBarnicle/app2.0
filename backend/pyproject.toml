@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "criminal-code-api"
+version = "0.1.0"
+description = "API for Criminal Code"
+requires-python = ">=3.8"
+dependencies = [
+    # Core dependencies
+    "flask==3.0.2",
+    "flask-cors==4.0.0",
+    "python-dotenv==1.0.1",
+    
+    # Scraping dependencies
+    "beautifulsoup4==4.12.3",
+    "requests==2.31.0",
+    "lxml==5.1.0",
+    
+    # Database
+    "psycopg2-binary==2.9.9",
+]
+
+[project.optional-dependencies]
+dev = [
+    # Testing
+    "pytest==8.0.2",
+    
+    # Code quality
+    "flake8==7.0.0",
+    "black==24.2.0",
+    "isort==5.13.2",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+pythonpath = [
+    ".",
+    "src"
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+multi-line-output = 3

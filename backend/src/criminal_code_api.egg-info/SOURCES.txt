@@ -1,0 +1,15 @@
+pyproject.toml
+src/app/__init__.py
+src/app/scraper/__init__.py
+src/app/scraper/models.py
+src/app/scraper/parser.py
+src/app/scraper/scraper.py
+src/criminal_code_api.egg-info/PKG-INFO
+src/criminal_code_api.egg-info/SOURCES.txt
+src/criminal_code_api.egg-info/dependency_links.txt
+src/criminal_code_api.egg-info/requires.txt
+src/criminal_code_api.egg-info/top_level.txt
+tests/test_basic.py
+tests/test_models.py
+tests/test_parser.py
+tests/test_scraper.py

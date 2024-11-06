@@ -65,3 +65,28 @@ def test_basic_error_handling(client):
     response = client.get('/nonexistent-route')
     assert response.status_code == 404
     
+def test_pytest_working():
+    """Basic test to verify pytest is working"""
+    assert True
+
+def test_app_fixture(app):
+    """Test that app fixture creates Flask app correctly"""
+    assert app is not None
+    assert app.config['TESTING'] is True
+
+def test_example_loading(example_sections, get_example):
+    """Test that example loading system works"""
+    # Verify we can load examples
+    assert example_sections is not None
+    assert len(example_sections) > 0
+    
+    # Verify we can get a specific example
+    base_section = get_example('test_parse_base_section', example_sections)
+    assert base_section is not None
+    assert 'html' in base_section
+    assert 'components' in base_section
+    
+    # Verify example contains expected data
+    assert 'Marginal Note' in base_section['components']
+    assert 'Section ID' in base_section['components']
+    
