@@ -70,7 +70,11 @@ TEST_CASE_MAPPING = {
     'test_parse_section_with_inline_definitions': 'Section with Inline Definitions',
     'test_parse_section_with_indented_definitions': 'Section with Indented Definitions',
     'test_parse_section_with_subsections': 'Section with Subsections',
-    'test_parse_section_with_continued_text': 'Section with Continued Text'
+    'test_parse_section_with_continued_text': 'Section with Continued Text',
+    'test_parse_part': 'Numbered Part w/ optional subheadings',
+    'test_parse_section_cross_references': 'Section Cross-References',
+    'test_parse_section_with_subsection_lists': 'Section with Subsections - Lists',
+    'test_parse_section_with_subsection_definitions': 'Section with Subsections - In-line Definitions'
 }
 
 @pytest.fixture

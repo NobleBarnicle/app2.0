@@ -408,6 +408,12 @@ Note that this example contains french terms
   - ContinuedSectionSubsection for extended content
   - Lawlabel elements for list markers
 
+#### 2.4.5 Section with Subsections - Lists         # Need to find an example of this
+
+#### 2.4.6 Section with Continued Text         # Need to find an example of this
+
+#### 2.4.7 Section with Cross-references         # Need to find an example of this
+
 ## 3. Metadata
 - The Criminal Code HTML contains important metadata both at the document level and within specific sections.
 
