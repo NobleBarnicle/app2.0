@@ -130,3 +130,24 @@ class CriminalCode:
                 if section.number == section_number:
                     return section
         return None
+
+class CrossReference:
+    def __init__(self, 
+                 text: str,
+                 target_section: Optional[str] = None,
+                 target_act: Optional[str] = None,
+                 external_url: Optional[str] = None,
+                 is_external: bool = False):
+        self.text = text
+        self.target_section = target_section  # For internal references
+        self.target_act = target_act         # For external act names
+        self.external_url = external_url     # For external URLs
+        self.is_external = is_external       # Flag for reference type
+
+    def get_url(self) -> Optional[str]:
+        """Get the appropriate URL for this reference"""
+        if self.is_external and self.external_url:
+            if self.external_url.startswith('/'):
+                return f"https://laws-lois.justice.gc.ca{self.external_url}"
+            return self.external_url
+        return None

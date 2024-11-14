@@ -5,7 +5,7 @@ import re
 from .models import (
     CriminalCode, Part, Section, Subsection, 
     Definition, HistoricalNote, CrossReference,
-    MarginalNote
+    MarginalNote, ListItem
 )
 
 class CriminalCodeParser:
@@ -15,9 +15,13 @@ class CriminalCodeParser:
         self.section_number_pattern = re.compile(r'^\d+(\.\d+)?$')
         self.list_label_pattern = re.compile(r'^\([a-z0-9]+(?:\.\d+)?\)$')
         
-    def parse_html(self, html_content: str) -> CriminalCode:
-        """Parse the full HTML content into a CriminalCode object"""
+    def parse_html(self, html_content: str) -> Optional[CriminalCode]:
+        if not html_content or not html_content.strip():
+            return None
+        
         soup = BeautifulSoup(html_content, 'lxml')
+        if not soup.find('head') or not soup.find('body'):
+            return None
         
         # Extract basic metadata
         title = self._extract_title(soup)
@@ -73,14 +77,24 @@ class CriminalCodeParser:
             
         return sections
     
-    def _parse_section(self, section_element: Tag) -> Section:
+    def _parse_section(self, section_element: Tag) -> Optional[Section]:
         """Parse a single section element"""
+        if not section_element:
+            return None
+        
+        # Check for required elements
         section_id = section_element.get('id', '')
         section_number = self._extract_section_number(section_element)
+        
+        # Validate required attributes
+        if not section_id or not section_number:
+            return None
+        
         marginal_note = self._parse_marginal_note(section_element)
         historical_notes = self._parse_historical_notes(section_element)
         
-        return Section(
+        # Create the section
+        section = Section(
             id=section_id,
             number=section_number,
             text=self._extract_section_text(section_element),
@@ -91,6 +105,89 @@ class CriminalCodeParser:
             cross_references=[],
             list_items=[]
         )
+        
+        # Parse subsections if they exist
+        subsections = []
+        for subsec_elem in section_element.find_all('p', class_='Subsection'):
+            subsection = self._parse_subsection(subsec_elem, section.id)
+            if subsection:
+                subsections.append(subsection)
+        section.subsections = subsections
+        
+        # Add any remaining content
+        for element in section_element.children:
+            if isinstance(element, Tag):
+                self._add_section_content(section, element)
+        
+        return section
+    
+    def _parse_subsection(self, subsection_elem: Tag, parent_section_id: str) -> Optional[Subsection]:
+        """Parse a subsection element"""
+        if not subsection_elem:
+            return None
+        
+        # Extract subsection number (e.g., "(1)", "(2)", etc.)
+        number = subsection_elem.find('span', class_='lawlabel')
+        if not number:
+            return None
+        
+        subsection = Subsection(
+            id=subsection_elem.get('id', ''),
+            number=number.get_text(strip=True),
+            text=self._extract_subsection_text(subsection_elem),
+            parent_section=parent_section_id,
+            marginal_note=self._parse_marginal_note(subsection_elem)
+        )
+        
+        # Parse list items within the subsection
+        next_elem = subsection_elem.find_next_sibling()
+        if next_elem and next_elem.name == 'ul' and 'ProvisionList' in next_elem.get('class', []):
+            subsection.list_items = self._parse_nested_list(next_elem)
+        
+        return subsection
+    
+    def _extract_subsection_text(self, element: Tag) -> str:
+        """Extract text content from subsection element"""
+        # Remove the lawlabel and other elements we don't want in the text
+        text_content = []
+        for content in element.stripped_strings:
+            if not self.list_label_pattern.match(content):
+                text_content.append(content)
+        return ' '.join(text_content).strip()
+    
+    def _parse_nested_list(self, list_element: Tag) -> List[ListItem]:
+        """Parse a nested provision list into a hierarchical structure"""
+        items = []
+        
+        for element in list_element.find_all('p', class_=['Paragraph', 'Subparagraph'], recursive=True):
+            label = self._extract_list_label(element)
+            text = self._extract_list_text(element)
+            
+            item = ListItem(
+                id=element.get('id', ''),
+                label=label,
+                text=text,
+                subitems=[]
+            )
+            
+            # Check if this is a subitem
+            if 'Subparagraph' in element.get('class', []):
+                # Find parent paragraph
+                parent_elem = element.find_parent('li').find_parent('li')
+                if parent_elem:
+                    parent_para = parent_elem.find('p', class_='Paragraph')
+                    if parent_para:
+                        item.parent_id = parent_para.get('id')
+                        # Add to parent's subitems instead of main list
+                        for parent_item in items:
+                            if parent_item.id == item.parent_id:
+                                parent_item.subitems.append(item)
+                                break
+                        continue
+                    
+            items.append(item)
+        
+        return items
     
     def _parse_marginal_note(self, element: Tag) -> Optional[MarginalNote]:
         """Parse marginal note from an element"""
@@ -263,25 +360,26 @@ class CriminalCodeParser:
         # Check if it's an external act reference
         is_external = 'XRefExternalAct' in element.get('class', [])
         
-        # Try to extract target section/act
-        target_section = None
-        target_act = None
-        
+        # Extract URL for external references
+        external_url = None
         if is_external:
-            target_act = text
-        else:
-            # Try to find section reference
-            section_match = re.search(r'section (\d+(\.\d+)?)', text)
-            if section_match:
-                target_section = section_match.group(1)
-        
+            link = element.find('a')
+            if link and link.get('href'):
+                # Convert relative URLs to absolute
+                href = link['href']
+                if href.startswith('/'):
+                    external_url = f"https://laws-lois.justice.gc.ca{href}"
+            else:
+                external_url = href
+    
         return CrossReference(
             text=text,
-            target_section=target_section,
-            target_act=target_act,
+            target_section=self._extract_target_section(element),
+            target_act=text if is_external else None,
+            external_url=external_url,
             is_external=is_external
         )
-    
+
     def _convert_list_to_subsections(self, section: Section, nested_items: List[Dict]):
         """Convert nested list items to subsections where appropriate"""
         for item in nested_items:

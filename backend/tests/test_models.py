@@ -207,3 +207,28 @@ def test_subsection_with_continued_text():
     assert subsection.text == "Initial text"
     assert subsection.continued_text == "Continued text"
 
+def test_cross_reference_url_generation():
+    """Test CrossReference URL generation logic"""
+    # Test external URL with relative path
+    ref1 = CrossReference(
+        text="Test Act",
+        external_url="/eng/acts/T-1",
+        is_external=True
+    )
+    assert ref1.get_url() == "https://laws-lois.justice.gc.ca/eng/acts/T-1"
+    
+    # Test external URL with absolute path
+    ref2 = CrossReference(
+        text="Test Act",
+        external_url="https://example.com/act",
+        is_external=True
+    )
+    assert ref2.get_url() == "https://example.com/act"
+    
+    # Test internal reference
+    ref3 = CrossReference(
+        text="Section 1",
+        target_section="1",
+        is_external=False
+    )
+    assert ref3.get_url() is None
